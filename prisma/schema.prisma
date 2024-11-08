@@ -1,0 +1,71 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int       @id @default(autoincrement())
+  username  String    @unique
+  fullName  String
+  email     String    @unique
+  password  String
+  phone     String
+  createdAt DateTime  @default(now())
+  bookings  Booking[]
+  role      Role      @default(USER)
+}
+
+model Vendor {
+  id          Int      @id @default(autoincrement())
+  name        String
+  phone       String
+  email       String   @unique
+  address     String
+  description String   @db.Text
+  venues      Venue[]
+  createdAt   DateTime @default(now())
+}
+
+model Venue {
+  id          Int       @id @default(autoincrement())
+  name        String
+  location    String
+  capacity    Int
+  pricePerDay Decimal   @db.Decimal(10, 2)
+  description String    @db.Text
+  vendorId    Int
+  vendor      Vendor    @relation(fields: [vendorId], references: [id])
+  bookings    Booking[]
+  amenities   String    @db.Text
+  images      String    @db.Text
+  createdAt   DateTime  @default(now())
+}
+
+model Booking {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  venueId     Int
+  bookingDate DateTime @default(now())
+  eventDate   DateTime
+  guestCount  Int
+  status      Status   @default(PENDING)
+  totalPrice  Decimal  @db.Decimal(10, 2)
+  user        User     @relation(fields: [userId], references: [id])
+  venue       Venue    @relation(fields: [venueId], references: [id])
+  createdAt   DateTime @default(now())
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum Status {
+  PENDING
+  CONFIRMED
+  CANCELLED
+}
